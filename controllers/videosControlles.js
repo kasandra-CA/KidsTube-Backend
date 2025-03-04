@@ -1,7 +1,7 @@
 const Video = require("../models/videosModel");
 
 /**
- * Add an video
+ * Add a video
  */
 const videoPost = async (req, res) => {
     try {
@@ -31,7 +31,22 @@ const videoGetAll = async (req, res) => {
 };
 
 /**
- * Update an video
+ * Get a single video by ID
+ */
+const videoGetById = async (req, res) => {
+    try {
+        const video = await Video.findById(req.params.id);
+        if (!video) {
+            return res.status(404).json({ error: "Video no encontrado" });
+        }
+        res.status(200).json(video);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * Update a video
  */
 const videoUpdate = async (req, res) => {
     try {
@@ -43,7 +58,7 @@ const videoUpdate = async (req, res) => {
 };
 
 /**
- * Delete an video
+ * Delete a video
  */
 const videoDelete = async (req, res) => {
     try {
@@ -54,4 +69,4 @@ const videoDelete = async (req, res) => {
     }
 };
 
-module.exports = { videoPost, videoGetAll, videoUpdate, videoDelete };
+module.exports = { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete };
