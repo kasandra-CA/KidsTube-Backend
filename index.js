@@ -23,11 +23,11 @@ app.use(cors({
 
 
 // Import controlers
-const { videoPost, videoGetAll, videoUpdate, videoDelete } = require("./controllers/videosControlles");
+const { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete } = require("./controllers/videosControlles");
 
-// Routes definition
 app.post("/api/videos", videoPost);
 app.get("/api/videos", videoGetAll);
+app.get("/api/videos/:id", videoGetById);
 app.put("/api/videos/:id", videoUpdate);
 app.delete("/api/videos/:id", videoDelete);
 
