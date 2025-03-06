@@ -3,7 +3,7 @@ const app = express();
 const mongoose = require("mongoose");
 
 // Correct MongoDB connection string
-const MONGO_URI = "mongodb+srv://kca11tita:7OMjztVsmZUUKqov@cluster0.lr72j.mongodb.net/todo-api?retryWrites=true&w=majority";
+const MONGO_URI = "mongodb+srv://irella:12345@cluster0.lrdhi.mongodb.net/?tls=true";
 
 mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
@@ -24,6 +24,10 @@ app.use(cors({
 
 // Import controlers
 const { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete } = require("./controllers/videosControlles");
+const { register, login } = require('./controllers/authController');
+
+app.post('/api/register', register);
+app.post('/api/login', login);
 
 app.post("/api/videos", videoPost);
 app.get("/api/videos", videoGetAll);
