@@ -24,10 +24,13 @@ app.use(cors({
 
 // Import controlers
 const { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete } = require("./controllers/videosControlles");
-const { register, login } = require('./controllers/authController');
+const { register, login, getRestrictedUsers, validateUserPIN, validateAdminPIN } = require('./controllers/authController');
 
 app.post('/api/register', register);
 app.post('/api/login', login);
+app.get('/api/users', getRestrictedUsers);
+app.post('/api/validate-pin', validateUserPIN);
+app.post('/api/validate-admin-pin', validateAdminPIN);
 
 app.post("/api/videos", videoPost);
 app.get("/api/videos", videoGetAll);
