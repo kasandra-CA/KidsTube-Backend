@@ -22,7 +22,7 @@ app.use(cors({
 }));
 
 
-// Import controlers
+// Import controllers
 const { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete } = require("./controllers/videosControlles");
 const { register, login } = require('./controllers/authController');
 
