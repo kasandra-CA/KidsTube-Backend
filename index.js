@@ -24,8 +24,14 @@ app.use(cors({
 
 // Import controllers
 const { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete } = require("./controllers/videosControlles");
-const { register, login, /*getRestrictedUsers,*/ validateUserPIN, validateAdminPIN, getUsers } = require('./controllers/authController');
-const {getAllRestrictedUsers, createRestrictedUser, updateRestrictedUser, deleteRestrictedUser} = require("./controllers/restrictedUserController");
+const { register, login, validateUserPIN, validateAdminPIN, getUsers } = require('./controllers/authController');
+const { getAllRestrictedUsers, createRestrictedUser, updateRestrictedUser, deleteRestrictedUser } = require("./controllers/restrictedUserController");
+const { getPlaylists,createPlaylist,updatePlaylist,deletePlaylist } = require("./controllers/playlistController");
+
+app.get("/api/playlists", getPlaylists);
+app.post("/api/playlists", createPlaylist);
+app.put("/api/playlists/:id", updatePlaylist);
+app.delete("/api/playlists/:id", deletePlaylist);
 
 app.get("/api/restricted-users", getAllRestrictedUsers);
 app.post("/api/restricted-users", createRestrictedUser);
@@ -34,7 +40,6 @@ app.delete("/api/restricted-users/:id", deleteRestrictedUser);
 
 app.post('/api/register', register);
 app.post('/api/login', login);
-/*app.get('/api/users', getRestrictedUsers);*/
 app.post('/api/validate-pin', validateUserPIN);
 app.post('/api/validate-admin-pin', validateAdminPIN);
 app.get('/api/users', getUsers);

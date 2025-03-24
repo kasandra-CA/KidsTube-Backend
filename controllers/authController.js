@@ -49,16 +49,6 @@ const getUsers = async (req, res) => {
     }
 };
 
-// Obtener usuarios restringidos asociados a la cuenta principal
-/*const getRestrictedUsers = async (req, res) => {
-    try {
-        const users = await User.find({ role: "restricted" }).select("firstName lastName email pin");
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};*/
-
 // Validar PIN de usuario restringido
 const validateUserPIN = async (req, res) => {
     try {
@@ -92,4 +82,4 @@ const validateAdminPIN = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUsers, /*getRestrictedUsers,*/ validateUserPIN, validateAdminPIN };
+module.exports = { register, login, getUsers, validateUserPIN, validateAdminPIN };
