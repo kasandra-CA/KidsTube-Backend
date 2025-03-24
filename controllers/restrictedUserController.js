@@ -1,9 +1,12 @@
 const RestrictedUser = require("../models/restrictedUserModel");
 
-// Obtener todos los usuarios restringidos
+// Obtener todos los usuarios restringidos por usuario iniciado
 const getAllRestrictedUsers = async (req, res) => {
     try {
-        const users = await RestrictedUser.find().select("name pin avatar");
+        const ownerId = req.query.owner; // viene como ?owner=123
+        const filter = ownerId ? { owner: ownerId } : {};
+
+        const users = await RestrictedUser.find(filter).select("name pin avatar");
         res.json(users);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -13,13 +16,13 @@ const getAllRestrictedUsers = async (req, res) => {
 // Crear usuario restringido
 const createRestrictedUser = async (req, res) => {
     try {
-        const { name, pin, avatar } = req.body;
+        const { name, pin, avatar, owner } = req.body;
 
         if (!name || !pin || pin.length !== 6 || !avatar) {
             return res.status(400).json({ error: "Todos los campos son obligatorios y el PIN debe tener 6 dígitos." });
         }
 
-        const newUser = new RestrictedUser({ name, pin, avatar });
+        const newUser = new RestrictedUser({ name, pin, avatar, owner });
         await newUser.save();
         res.status(201).json({ message: "Usuario restringido creado exitosamente" });
     } catch (error) {

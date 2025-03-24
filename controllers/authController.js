@@ -34,7 +34,7 @@ const login = async (req, res) => {
         if (!isMatch) return res.status(400).json({ error: 'Usuario o contraseña inválida' });
 
         const token = jwt.sign({ id: user._id }, 'secretKey', { expiresIn: '1h' });
-        res.json({ message: 'Login exitoso', token });
+        res.json({ message: 'Login exitoso', token, user }); // ⬅️ Incluye el usuario
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
