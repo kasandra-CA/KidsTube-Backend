@@ -25,6 +25,12 @@ app.use(cors({
 // Import controllers
 const { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete } = require("./controllers/videosControlles");
 const { register, login, /*getRestrictedUsers,*/ validateUserPIN, validateAdminPIN, getUsers } = require('./controllers/authController');
+const {getAllRestrictedUsers, createRestrictedUser, updateRestrictedUser, deleteRestrictedUser} = require("./controllers/restrictedUserController");
+
+app.get("/api/restricted-users", getAllRestrictedUsers);
+app.post("/api/restricted-users", createRestrictedUser);
+app.put("/api/restricted-users/:id", updateRestrictedUser);
+app.delete("/api/restricted-users/:id", deleteRestrictedUser);
 
 app.post('/api/register', register);
 app.post('/api/login', login);
