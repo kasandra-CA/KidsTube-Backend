@@ -79,9 +79,10 @@ const validateUserPIN = async (req, res) => {
 const validateAdminPIN = async (req, res) => {
     try {
         const { pin } = req.body;
-        const admin = await User.findOne({ role: "admin" });
 
-        if (!admin || admin.pin !== pin) {
+        const admin = await User.findOne({ pin }); // Busca por PIN exacto
+
+        if (!admin) {
             return res.status(401).json({ error: "PIN incorrecto" });
         }
 
