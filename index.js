@@ -26,12 +26,13 @@ app.use(cors({
 const { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete } = require("./controllers/videosControlles");
 const { register, login, validateUserPIN, validateAdminPIN, getUsers } = require('./controllers/authController');
 const { getAllRestrictedUsers, createRestrictedUser, updateRestrictedUser, deleteRestrictedUser } = require("./controllers/restrictedUserController");
-const { getPlaylists,createPlaylist,updatePlaylist,deletePlaylist } = require("./controllers/playlistController");
+const { getPlaylists, createPlaylist, updatePlaylist, deletePlaylist, addVideosToPlaylist } = require("./controllers/playlistController");
 
 app.get("/api/playlists", getPlaylists);
 app.post("/api/playlists", createPlaylist);
 app.put("/api/playlists/:id", updatePlaylist);
 app.delete("/api/playlists/:id", deletePlaylist);
+app.post("/api/playlists/add-videos", addVideosToPlaylist);
 
 app.get("/api/restricted-users", getAllRestrictedUsers);
 app.post("/api/restricted-users", createRestrictedUser);
