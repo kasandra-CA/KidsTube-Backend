@@ -3,7 +3,7 @@ const app = express();
 const mongoose = require("mongoose");
 
 // Correct MongoDB connection string
-const MONGO_URI = "mongodb+srv://irella:12345@cluster0.lrdhi.mongodb.net/";
+const MONGO_URI = "mongodb+srv://kca11tita:7OMjztVsmZUUKqov@cluster0.lr72j.mongodb.net/todo-api?retryWrites=true&w=majority";
 
 mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
