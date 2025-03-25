@@ -1,21 +1,27 @@
 const Playlist = require("../models/playlistModel");
 
-// Obtener playlists por dueño
 const getPlaylists = async (req, res) => {
     try {
         const { owner } = req.query;
-        const playlists = await Playlist.find({ owner }).populate("profiles", "name avatar").populate("videos");
+        const filter = owner ? { owner } : {};
+        const playlists = await Playlist.find(filter)
+            .populate("profiles", "name avatar")
+            .populate("videos");
         res.json(playlists);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// Crear playlist
 const createPlaylist = async (req, res) => {
     try {
-        const { name, profiles, owner } = req.body;
-        const newPlaylist = new Playlist({ name, profiles, owner, videos: [] });
+        const { name, profiles, owner, videos } = req.body;
+
+        if (!name || !owner || !Array.isArray(profiles) || !Array.isArray(videos)) {
+            return res.status(400).json({ error: "Faltan campos obligatorios" });
+        }
+
+        const newPlaylist = new Playlist({ name, profiles, owner, videos });
         await newPlaylist.save();
         res.status(201).json({ message: "Playlist creada correctamente" });
     } catch (error) {
@@ -23,19 +29,18 @@ const createPlaylist = async (req, res) => {
     }
 };
 
-// Editar playlist
 const updatePlaylist = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, profiles } = req.body;
-        await Playlist.findByIdAndUpdate(id, { name, profiles });
+        const { name, profiles, videos } = req.body;
+
+        await Playlist.findByIdAndUpdate(id, { name, profiles, videos });
         res.json({ message: "Playlist actualizada correctamente" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// Eliminar playlist
 const deletePlaylist = async (req, res) => {
     try {
         const { id } = req.params;
@@ -46,7 +51,6 @@ const deletePlaylist = async (req, res) => {
     }
 };
 
-// Agregar videos existentes a una playlist
 const addVideosToPlaylist = async (req, res) => {
     try {
         const { playlistId, videoIds } = req.body;
@@ -73,5 +77,5 @@ module.exports = {
     createPlaylist,
     updatePlaylist,
     deletePlaylist,
-    addVideosToPlaylist // ✅ Este es nuevo
+    addVideosToPlaylist
 };

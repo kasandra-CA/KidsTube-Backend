@@ -1,17 +1,14 @@
 const Video = require("../models/videosModel");
 
-/**
- * Crear video vinculado a una playlist
- */
 const videoPost = async (req, res) => {
     try {
-        const { name, url, description, playlist } = req.body;
+        const { name, url, description } = req.body;
 
-        if (!name || !url || !playlist) {
-            return res.status(400).json({ error: "Nombre, URL y Playlist son obligatorios" });
+        if (!name || !url) {
+            return res.status(400).json({ error: "Nombre y URL son obligatorios" });
         }
 
-        const video = new Video({ name, url, description, playlist });
+        const video = new Video({ name, url, description });
         await video.save();
         res.status(201).json({ message: "✅ Video agregado con éxito", video });
     } catch (error) {
@@ -19,14 +16,9 @@ const videoPost = async (req, res) => {
     }
 };
 
-/**
- * Obtener todos los videos o por playlist
- */
 const videoGetAll = async (req, res) => {
     try {
-        const { playlist } = req.query;
-        const filter = playlist ? { playlist } : {};
-        const videos = await Video.find(filter);
+        const videos = await Video.find();
         res.status(200).json(videos);
     } catch (error) {
         res.status(500).json({ error: error.message });
