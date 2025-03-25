@@ -58,9 +58,25 @@ const deleteRestrictedUser = async (req, res) => {
     }
 };
 
+const validateRestrictedUserPIN = async (req, res) => {
+    try {
+        const { userId, pin } = req.body;
+        const user = await RestrictedUser.findById(userId);
+
+        if (!user || user.pin !== pin) {
+            return res.status(401).json({ error: "PIN incorrecto" });
+        }
+
+        res.json({ message: "✅ Acceso permitido" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     getAllRestrictedUsers,
     createRestrictedUser,
     updateRestrictedUser,
-    deleteRestrictedUser
+    deleteRestrictedUser,
+    validateRestrictedUserPIN
 };

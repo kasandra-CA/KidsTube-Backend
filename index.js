@@ -25,7 +25,7 @@ app.use(cors({
 // Import controllers
 const { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete } = require("./controllers/videosControlles");
 const { register, login, validateUserPIN, validateAdminPIN, getUsers } = require('./controllers/authController');
-const { getAllRestrictedUsers, createRestrictedUser, updateRestrictedUser, deleteRestrictedUser } = require("./controllers/restrictedUserController");
+const { getAllRestrictedUsers, createRestrictedUser, updateRestrictedUser, deleteRestrictedUser, validateRestrictedUserPIN } = require("./controllers/restrictedUserController");
 const { getPlaylists, createPlaylist, updatePlaylist, deletePlaylist, addVideosToPlaylist } = require("./controllers/playlistController");
 
 app.get("/api/playlists", getPlaylists);
@@ -38,6 +38,7 @@ app.get("/api/restricted-users", getAllRestrictedUsers);
 app.post("/api/restricted-users", createRestrictedUser);
 app.put("/api/restricted-users/:id", updateRestrictedUser);
 app.delete("/api/restricted-users/:id", deleteRestrictedUser);
+app.post("/api/validate-restricted-pin", validateRestrictedUserPIN);
 
 app.post('/api/register', register);
 app.post('/api/login', login);
