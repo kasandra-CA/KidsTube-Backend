@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const mongoose = require("mongoose");
 
+
 // Correct MongoDB connection string
 const MONGO_URI = "mongodb+srv://kca11tita:7OMjztVsmZUUKqov@cluster0.lr72j.mongodb.net/todo-api?retryWrites=true&w=majority";
 
@@ -27,18 +28,25 @@ const { videoPost, videoGetAll, videoGetById, videoUpdate, videoDelete } = requi
 const { register, login, validateUserPIN, validateAdminPIN, getUsers } = require('./controllers/authController');
 const { getAllRestrictedUsers, createRestrictedUser, updateRestrictedUser, deleteRestrictedUser, validateRestrictedUserPIN } = require("./controllers/restrictedUserController");
 const { getPlaylists, createPlaylist, updatePlaylist, deletePlaylist, addVideosToPlaylist } = require("./controllers/playlistController");
+const verifyToken = require("./middleware/verifytoken");
 
-app.get("/api/playlists", getPlaylists);
-app.post("/api/playlists", createPlaylist);
-app.put("/api/playlists/:id", updatePlaylist);
-app.delete("/api/playlists/:id", deletePlaylist);
-app.post("/api/playlists/add-videos", addVideosToPlaylist);
+app.get("/api/videos", verifyToken, videoGetAll);
+app.post("/api/videos", verifyToken, videoPost);
+app.put("/api/videos/:id", verifyToken, videoUpdate);
+app.delete("/api/videos/:id", verifyToken, videoDelete);
 
-app.get("/api/restricted-users", getAllRestrictedUsers);
-app.post("/api/restricted-users", createRestrictedUser);
-app.put("/api/restricted-users/:id", updateRestrictedUser);
-app.delete("/api/restricted-users/:id", deleteRestrictedUser);
+app.get("/api/playlists", verifyToken, getPlaylists);
+app.post("/api/playlists", verifyToken, createPlaylist);
+app.put("/api/playlists/:id", verifyToken, updatePlaylist);
+app.delete("/api/playlists/:id", verifyToken, deletePlaylist);
+app.post("/api/playlists/add-videos", verifyToken, addVideosToPlaylist);
+
+app.get("/api/restricted-users", verifyToken, getAllRestrictedUsers);
+app.post("/api/restricted-users", verifyToken, createRestrictedUser);
+app.put("/api/restricted-users/:id", verifyToken, updateRestrictedUser);
+app.delete("/api/restricted-users/:id", verifyToken, deleteRestrictedUser);
 app.post("/api/validate-restricted-pin", validateRestrictedUserPIN);
+
 
 app.post('/api/register', register);
 app.post('/api/login', login);
@@ -46,11 +54,6 @@ app.post('/api/validate-pin', validateUserPIN);
 app.post('/api/validate-admin-pin', validateAdminPIN);
 app.get('/api/users', getUsers);
 
-app.post("/api/videos", videoPost);
-app.get("/api/videos", videoGetAll);
-app.get("/api/videos/:id", videoGetById);
-app.put("/api/videos/:id", videoUpdate);
-app.delete("/api/videos/:id", videoDelete);
 
 // Start server
 app.listen(3000, () => console.log(`Server running on port 3000!`));
