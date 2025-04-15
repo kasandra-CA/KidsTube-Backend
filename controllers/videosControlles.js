@@ -1,14 +1,15 @@
 const Video = require("../models/videosModel");
 
+// Crear video asociado a un usuario
 const videoPost = async (req, res) => {
     try {
-        const { name, url, description } = req.body;
+        const { name, url, description, owner } = req.body;
 
-        if (!name || !url) {
-            return res.status(400).json({ error: "Nombre y URL son obligatorios" });
+        if (!name || !url || !owner) {
+            return res.status(400).json({ error: "Nombre, URL y owner son obligatorios" });
         }
 
-        const video = new Video({ name, url, description });
+        const video = new Video({ name, url, description, owner });
         await video.save();
         res.status(201).json({ message: "✅ Video agregado con éxito", video });
     } catch (error) {
@@ -16,9 +17,13 @@ const videoPost = async (req, res) => {
     }
 };
 
+// Obtener solo los videos del usuario logueado
 const videoGetAll = async (req, res) => {
     try {
-        const videos = await Video.find();
+        const { owner } = req.query;
+        if (!owner) return res.status(400).json({ error: "Falta el parámetro owner" });
+
+        const videos = await Video.find({ owner });
         res.status(200).json(videos);
     } catch (error) {
         res.status(500).json({ error: error.message });
