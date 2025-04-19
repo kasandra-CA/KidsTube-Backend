@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require("uuid");
 const { sendVerificationEmail } = require("../utils/mailer");
+const { sendSMS } = require("../utils/smsSender");
 
 const register = async (req, res) => {
     try {
@@ -57,17 +58,58 @@ const verifyEmail = async (req, res) => {
 };
 
 // Login de usuario
+const verificationCodes = {}; // Memoria temporal
+
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ error: 'Usuario o contraseña inválida' });
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ error: 'Usuario o contraseña inválida' });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(400).json({ error: "Usuario o contraseña inválida" });
+        }
 
-        const token = jwt.sign({ id: user._id }, 'secretKey', { expiresIn: '1h' });
-        res.json({ message: 'Login exitoso', token, user }); // ⬅️ Incluye el usuario
+        if (user.status !== "active") {
+            return res.status(403).json({ error: "Tu cuenta aún no está verificada por correo." });
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000);
+        verificationCodes[user._id] = code;
+
+        console.log(`📲 Enviando código ${code} a ${user.phone}`);
+
+        try {
+            await sendSMS(user.phone, code);
+        } catch (smsError) {
+            console.error("❌ Error al enviar el SMS:", smsError);
+            return res.status(500).json({ error: "No se pudo enviar el código SMS. Verifica el número telefónico." });
+        }
+
+        res.json({
+            message: "Código enviado por SMS",
+            userId: user._id,
+            user: { firstName: user.firstName }
+        });
+    } catch (error) {
+        console.error("❌ Error en login:", error);
+        res.status(500).json({ error: "Error interno del servidor." });
+    }
+};
+
+const verifySMSCode = async (req, res) => {
+    try {
+        const { userId, code } = req.body;
+        const expectedCode = verificationCodes[userId];
+
+        if (!expectedCode || expectedCode != code) {
+            return res.status(400).json({ error: "Código incorrecto o expirado" });
+        }
+
+        delete verificationCodes[userId]; // Borrar código usado
+
+        const token = jwt.sign({ id: userId }, 'secretKey', { expiresIn: '1h' });
+
+        res.json({ message: "Autenticación completa", token });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -115,4 +157,4 @@ const validateAdminPIN = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUsers, validateUserPIN, validateAdminPIN, verifyEmail };
+module.exports = { register, login, getUsers, validateUserPIN, validateAdminPIN, verifyEmail, verifySMSCode};
