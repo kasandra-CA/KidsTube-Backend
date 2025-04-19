@@ -10,7 +10,10 @@ const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     country: { type: String },
-    birthdate: { type: Date, required: true }
+    birthdate: { type: Date, required: true },
+    status: { type: String, enum: ["pending", "active"], default: "pending" },
+    verificationToken: { type: String },
+
 });
 
 // Hash de contraseña antes de guardar

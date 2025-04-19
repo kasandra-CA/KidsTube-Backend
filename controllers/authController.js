@@ -2,24 +2,57 @@
 const User = require('../models/authModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require("uuid");
+const { sendVerificationEmail } = require("../utils/mailer");
 
-// Registrar usuario
 const register = async (req, res) => {
     try {
         const { email, password, phone, pin, firstName, lastName, country, birthdate } = req.body;
 
-        // Validar edad
         const age = new Date().getFullYear() - new Date(birthdate).getFullYear();
         if (age < 18) return res.status(400).json({ error: 'Debes ser mayor de 18 años' });
 
-        // Verificar usuario existente
         if (await User.findOne({ email })) return res.status(400).json({ error: 'El correo ya está registrado' });
 
-        const user = new User({ email, password, phone, pin, firstName, lastName, country, birthdate });
+        const verificationToken = uuidv4(); // Token único
+
+        const user = new User({
+            email,
+            password,
+            phone,
+            pin,
+            firstName,
+            lastName,
+            country,
+            birthdate,
+            verificationToken,
+            status: "pending"
+        });
+
         await user.save();
-        res.status(201).json({ message: 'Registro exitoso' });
+        await sendVerificationEmail(email, verificationToken);
+
+        res.status(201).json({ message: "Registro exitoso. Revisa tu correo para verificar tu cuenta." });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+};
+
+const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const user = await User.findOne({ verificationToken: token });
+
+        if (!user) return res.status(400).send("Token inválido o expirado");
+
+        user.status = "active";
+        user.verificationToken = undefined;
+        await user.save();
+
+        // Redirigir al login
+        res.redirect("/auth.html");
+    } catch (error) {
+        res.status(500).send("Error al verificar el correo");
     }
 };
 
@@ -82,4 +115,4 @@ const validateAdminPIN = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUsers, validateUserPIN, validateAdminPIN };
+module.exports = { register, login, getUsers, validateUserPIN, validateAdminPIN, verifyEmail };

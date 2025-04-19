@@ -29,6 +29,12 @@ const { register, login, validateUserPIN, validateAdminPIN, getUsers } = require
 const { getAllRestrictedUsers, createRestrictedUser, updateRestrictedUser, deleteRestrictedUser, validateRestrictedUserPIN } = require("./controllers/restrictedUserController");
 const { getPlaylists, createPlaylist, updatePlaylist, deletePlaylist, addVideosToPlaylist } = require("./controllers/playlistController");
 const verifyToken = require("./middleware/verifytoken");
+const { verifyEmail } = require('./controllers/authController');
+
+const path = require("path");
+app.use(express.static(path.join(__dirname, "../KidsTube-Frontend")));
+
+app.get('/api/verify/:token', verifyEmail);
 
 app.get("/api/videos", verifyToken, videoGetAll);
 app.post("/api/videos", verifyToken, videoPost);
