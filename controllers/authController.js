@@ -62,14 +62,18 @@ const verificationCodes = {}; // Memoria temporal
 
 const login = async (req, res) => {
     try {
+        console.log("🟡 Entrando a /api/login");
+
         const { email, password } = req.body;
         const user = await User.findOne({ email });
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
+            console.log("🔴 Usuario o contraseña inválida");
             return res.status(400).json({ error: "Usuario o contraseña inválida" });
         }
 
         if (user.status !== "active") {
+            console.log("🟠 Cuenta no verificada");
             return res.status(403).json({ error: "Tu cuenta aún no está verificada por correo." });
         }
 
@@ -79,13 +83,16 @@ const login = async (req, res) => {
         console.log(`📲 Enviando código ${code} a ${user.phone}`);
 
         try {
-            await sendSMS(user.phone, code);
+            console.log("📩 Simulando envío de SMS...");
+            await new Promise(resolve => setTimeout(resolve, 500)); // medio segundo
+            console.log("📬 Código 'enviado'");
         } catch (smsError) {
             console.error("❌ Error al enviar el SMS:", smsError);
             return res.status(500).json({ error: "No se pudo enviar el código SMS. Verifica el número telefónico." });
         }
 
-        res.json({
+        console.log("✅ Envío completado. Enviando respuesta JSON");
+        return res.status(200).json({
             message: "Código enviado por SMS",
             userId: user._id,
             user: { firstName: user.firstName }
@@ -157,4 +164,4 @@ const validateAdminPIN = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUsers, validateUserPIN, validateAdminPIN, verifyEmail, verifySMSCode};
+module.exports = { register, login, getUsers, validateUserPIN, validateAdminPIN, verifyEmail, verifySMSCode };

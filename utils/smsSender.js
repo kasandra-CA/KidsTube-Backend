@@ -7,13 +7,19 @@ const vonage = new Vonage({
 
 const sendSMS = async (to, code) => {
     return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            reject(new Error("Tiempo de espera agotado al enviar SMS"));
+        }, 5000); // 5 segundos máximo
+
         vonage.sms.send(
             {
                 to,
-                from: "KidsTube",
+                from: "KT",
                 text: `Tu código de verificación es: ${code}`
             },
             (err, responseData) => {
+                clearTimeout(timeout); // Detiene el timeout si responde a tiempo
+
                 if (err) {
                     console.error("❌ Error al enviar SMS:", err);
                     reject(err);
@@ -25,5 +31,6 @@ const sendSMS = async (to, code) => {
         );
     });
 };
+
 
 module.exports = { sendSMS };
