@@ -6,6 +6,9 @@ const { v4: uuidv4 } = require("uuid");
 const { sendVerificationEmail } = require("../utils/mailer");
 const { sendSMS } = require("../utils/smsSender");
 
+const verificationCodes = {}; // Memoria temporal para códigos SMS
+
+// Registro de usuario
 const register = async (req, res) => {
     try {
         const { email, password, phone, pin, firstName, lastName, country, birthdate } = req.body;
@@ -15,7 +18,7 @@ const register = async (req, res) => {
 
         if (await User.findOne({ email })) return res.status(400).json({ error: 'El correo ya está registrado' });
 
-        const verificationToken = uuidv4(); // Token único
+        const verificationToken = uuidv4();
 
         const user = new User({
             email,
@@ -35,10 +38,12 @@ const register = async (req, res) => {
 
         res.status(201).json({ message: "Registro exitoso. Revisa tu correo para verificar tu cuenta." });
     } catch (error) {
+        console.error("❌ Error en registro:", error);
         res.status(500).json({ error: error.message });
     }
 };
 
+// Verificación por correo (token desde enlace)
 const verifyEmail = async (req, res) => {
     try {
         const { token } = req.params;
@@ -50,30 +55,24 @@ const verifyEmail = async (req, res) => {
         user.verificationToken = undefined;
         await user.save();
 
-        // Redirigir al login
-        res.redirect("/auth.html");
+        res.status(200).send("Cuenta verificada"); // Redirige al login
     } catch (error) {
+        console.error("❌ Error al verificar email:", error);
         res.status(500).send("Error al verificar el correo");
     }
 };
 
-// Login de usuario
-const verificationCodes = {}; // Memoria temporal
-
+// Login
 const login = async (req, res) => {
     try {
-        console.log("🟡 Entrando a /api/login");
-
         const { email, password } = req.body;
         const user = await User.findOne({ email });
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
-            console.log("🔴 Usuario o contraseña inválida");
             return res.status(400).json({ error: "Usuario o contraseña inválida" });
         }
 
         if (user.status !== "active") {
-            console.log("🟠 Cuenta no verificada");
             return res.status(403).json({ error: "Tu cuenta aún no está verificada por correo." });
         }
 
@@ -82,16 +81,14 @@ const login = async (req, res) => {
 
         console.log(`📲 Enviando código ${code} a ${user.phone}`);
 
+        // Simulación de envío de SMS (puedes cambiar esto por sendSMS si lo usas en producción)
         try {
-            console.log("📩 Simulando envío de SMS...");
-            await new Promise(resolve => setTimeout(resolve, 500)); // medio segundo
-            console.log("📬 Código 'enviado'");
+            await new Promise(resolve => setTimeout(resolve, 500));
         } catch (smsError) {
-            console.error("❌ Error al enviar el SMS:", smsError);
-            return res.status(500).json({ error: "No se pudo enviar el código SMS. Verifica el número telefónico." });
+            console.error("❌ Error al enviar SMS:", smsError);
+            return res.status(500).json({ error: "No se pudo enviar el código SMS." });
         }
 
-        console.log("✅ Envío completado. Enviando respuesta JSON");
         return res.status(200).json({
             message: "Código enviado por SMS",
             userId: user._id,
@@ -103,6 +100,7 @@ const login = async (req, res) => {
     }
 };
 
+// Verificar código SMS
 const verifySMSCode = async (req, res) => {
     try {
         const { userId, code } = req.body;
@@ -112,7 +110,7 @@ const verifySMSCode = async (req, res) => {
             return res.status(400).json({ error: "Código incorrecto o expirado" });
         }
 
-        delete verificationCodes[userId]; // Borrar código usado
+        delete verificationCodes[userId];
 
         const token = jwt.sign({ id: userId }, 'secretKey', { expiresIn: '1h' });
 
@@ -122,6 +120,7 @@ const verifySMSCode = async (req, res) => {
     }
 };
 
+// Obtener usuarios (opcional para panel admin)
 const getUsers = async (req, res) => {
     try {
         const users = await User.find().select("firstName lastName email pin");
@@ -151,8 +150,7 @@ const validateUserPIN = async (req, res) => {
 const validateAdminPIN = async (req, res) => {
     try {
         const { pin } = req.body;
-
-        const admin = await User.findOne({ pin }); // Busca por PIN exacto
+        const admin = await User.findOne({ pin });
 
         if (!admin) {
             return res.status(401).json({ error: "PIN incorrecto" });
@@ -164,4 +162,12 @@ const validateAdminPIN = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUsers, validateUserPIN, validateAdminPIN, verifyEmail, verifySMSCode };
+module.exports = {
+    register,
+    login,
+    getUsers,
+    validateUserPIN,
+    validateAdminPIN,
+    verifyEmail,
+    verifySMSCode
+};
