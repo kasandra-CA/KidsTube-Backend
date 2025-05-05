@@ -6,7 +6,7 @@ async function sendVerificationEmail(email, token) {
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
         headers: {
-            "api-key": "xkeysa441b8a73aeb6ec79a43a29c503bb512512d49f0bc4b85f8a-TCEFnthRijwpY2xZ",
+            "api-key": "API KEY",
             "Content-Type": "application/json",
             "Accept": "application/json"
         },

@@ -54,6 +54,9 @@ app.post("/api/verify-sms", authController.verifySMSCode);
 app.post("/api/validate-pin", authController.validateUserPIN);
 app.post("/api/validate-admin-pin", authController.validateAdminPIN);
 app.get("/api/users", authController.getUsers);
+app.post("/api/google-login", authController.googleLogin);
+app.post("/api/complete-profile", verifyToken, authController.completeProfile);
+
 
 // 📌 Rutas de usuarios restringidos
 app.get("/api/restricted-users", verifyToken, restrictedUserController.getAllRestrictedUsers);

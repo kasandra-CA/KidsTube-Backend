@@ -5,8 +5,10 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require("uuid");
 const { sendVerificationEmail } = require("../utils/mailer");
 const { sendSMS } = require("../utils/smsSender");
+const { OAuth2Client } = require("google-auth-library");
 
 const verificationCodes = {}; // Memoria temporal para códigos SMS
+const client = new OAuth2Client("KEY GOOGLE");
 
 // Registro de usuario
 const register = async (req, res) => {
@@ -162,6 +164,86 @@ const validateAdminPIN = async (req, res) => {
     }
 };
 
+const generateToken = (user) => {
+    return jwt.sign({ id: user._id }, 'secretKey', { expiresIn: '1h' });
+  };
+
+const googleLogin = async (req, res) => {
+    const { idToken } = req.body;
+
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken,
+            audience: "KEY GOOGLE"
+        });
+
+        const payload = ticket.getPayload();
+        const { email, name, sub } = payload;
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Crear usuario con lo que viene de Google
+            user = new User({
+                email,
+                firstName: name,
+                googleId: sub,
+                verified: true,
+                phone: "",
+                country: "",
+                pin: "",
+                birthdate: null,
+                isGoogleAccount: true
+            });
+
+            await user.save();
+
+            // Decirle al frontend que falta completar datos
+            const token = generateToken(user); // tu función existente
+            return res.status(200).json({
+                token,
+                userId: user._id,
+                name: user.firstName,
+                needExtraData: true
+            });
+        }
+
+        // Usuario ya existe
+        const token = generateToken(user);
+        res.status(200).json({
+            token,
+            userId: user._id,
+            name: user.firstName,
+            needExtraData: false
+        });
+
+    } catch (err) {
+        console.error("❌ Error verificando Google Token:", err);
+        res.status(401).json({ error: "Token inválido o expirado" });
+    }
+};
+
+const completeProfile = async (req, res) => {
+    const userId = req.user.id;
+    const { phone, pin, country, birthdate } = req.body;
+  
+    try {
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+  
+      user.phone = phone;
+      user.pin = pin;
+      user.country = country;
+      user.birthdate = birthdate;
+      await user.save();
+  
+      res.json({ message: "Perfil completado con éxito" });
+    } catch (err) {
+      res.status(500).json({ error: "Error actualizando perfil" });
+    }
+  };
+  
+
 module.exports = {
     register,
     login,
@@ -169,5 +251,7 @@ module.exports = {
     validateUserPIN,
     validateAdminPIN,
     verifyEmail,
-    verifySMSCode
+    verifySMSCode,
+    googleLogin,
+    completeProfile
 };
