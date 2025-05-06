@@ -42,6 +42,7 @@ console.log("🎥 videoGetAll definido:", typeof videoGetAll); // 👈 agrega es
 const authController = require("./controllers/authController");
 const restrictedUserController = require("./controllers/restrictedUserController");
 const playlistController = require("./controllers/playlistController");
+const googleAuthController = require("./controllers/googleAuthController");
 
 // 🛠 DEBUG
 console.log("📦 Exportaciones de playlistController:", Object.keys(playlistController));
@@ -54,8 +55,10 @@ app.post("/api/verify-sms", authController.verifySMSCode);
 app.post("/api/validate-pin", authController.validateUserPIN);
 app.post("/api/validate-admin-pin", authController.validateAdminPIN);
 app.get("/api/users", authController.getUsers);
-app.post("/api/google-login", authController.googleLogin);
-app.post("/api/complete-profile", verifyToken, authController.completeProfile);
+
+// 📌 Rutas de Google Auth
+app.post("/api/google-login", googleAuthController.googleLogin); //GOOGLE
+app.post("/api/complete-profile", verifyToken, googleAuthController.completeProfile);//GOOGLE
 
 
 // 📌 Rutas de usuarios restringidos
