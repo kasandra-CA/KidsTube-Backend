@@ -1,4 +1,28 @@
 const Playlist = require("../models/playlistModel");
+const Video = require("../models/videosModel");
+
+// 🔍 Buscar videos por texto dentro de playlists de un usuario restringido
+const searchVideosByRestrictedUser = async (req, res) => {
+  try {
+    const { userId, text } = req.query;
+    if (!userId || !text) return res.status(400).json({ error: "Parámetros incompletos" });
+
+    const regex = new RegExp(text, "i");
+
+    const playlists = await Playlist.find({ restrictedUser: userId }).populate("videos");
+
+    // Extraer todos los videos de esas playlists
+    const allVideos = playlists.flatMap(p => p.videos);
+
+    // Filtrar por nombre o descripción
+    const filtered = allVideos.filter(v => regex.test(v.name) || regex.test(v.description));
+
+    res.json(filtered);
+  } catch (err) {
+    console.error("❌ Error en búsqueda de videos:", err);
+    res.status(500).json({ error: "Error al buscar videos" });
+  }
+};
 
 const getPlaylists = async (req, res) => {
   try {
@@ -92,5 +116,6 @@ module.exports = {
   createPlaylist,
   updatePlaylist,
   deletePlaylist,
-  addVideosToPlaylist
+  addVideosToPlaylist,
+  searchVideosByRestrictedUser
 };

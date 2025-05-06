@@ -3,12 +3,16 @@ const Video = require('../models/videosModel');
 // 🔁 Convertir URL a embed
 function convertToEmbedUrl(originalUrl) {
   try {
+    if (originalUrl.startsWith("https://www.youtube.com/embed/")) {
+      return originalUrl; // ya es válida
+    }
+
     const urlObj = new URL(originalUrl);
     let videoId = new URLSearchParams(urlObj.search).get("v");
     if (!videoId && urlObj.hostname === "youtu.be") {
       videoId = urlObj.pathname.split("/")[1];
     }
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    return videoId ? 'https ://www.youtube.com/embed/${videoId}' : null;
   } catch (e) {
     return null;
   }
@@ -17,7 +21,9 @@ function convertToEmbedUrl(originalUrl) {
 // 📌 Crear video
 const videoPost = async (req, res) => {
   try {
-    const { name, url, description, owner } = req.body;
+    const { name, url, description } = req.body;
+    const owner = req.userId; // ✅ obtenido del token
+
     if (!name || !url || !owner) {
       return res.status(400).json({ error: "Faltan campos obligatorios." });
     }
@@ -27,14 +33,9 @@ const videoPost = async (req, res) => {
       return res.status(400).json({ error: "URL no válida para incrustar." });
     }
 
-    const video = new Video({
-      name,
-      url: embedUrl,
-      description,
-      owner
-    });
-
+    const video = new Video({ name, url: embedUrl, description, owner });
     await video.save();
+
     res.status(201).json({ message: "✅ Video creado correctamente", video });
   } catch (error) {
     console.error("❌ Error al crear video:", error);
@@ -55,10 +56,13 @@ const videoGetAll = async (req, res) => {
   }
 };
 
-// ✏️ Actualizar video
+// ✏ Actualizar video
 const videoUpdate = async (req, res) => {
   try {
-    const { name, url, description } = req.body;
+    const { name, url, description, owner } = req.body;
+    if (!name || !url || !owner) {
+      return res.status(400).json({ error: "Faltan campos obligatorios." });
+    }
 
     const embedUrl = convertToEmbedUrl(url);
     if (!embedUrl) {
@@ -67,7 +71,7 @@ const videoUpdate = async (req, res) => {
 
     const updated = await Video.findByIdAndUpdate(
       req.params.id,
-      { name, url: embedUrl, description },
+      { name, url: embedUrl, description, owner },
       { new: true }
     );
 
@@ -82,7 +86,7 @@ const videoUpdate = async (req, res) => {
   }
 };
 
-// 🗑️ Eliminar video
+// 🗑 Eliminar video
 const videoDelete = async (req, res) => {
   try {
     const deleted = await Video.findByIdAndDelete(req.params.id);
@@ -95,11 +99,25 @@ const videoDelete = async (req, res) => {
     res.status(500).json({ error: "Error al eliminar el video" });
   }
 };
+// 📄 Obtener video por ID
+const videoGetById = async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.id);
+    if (!video) {
+      return res.status(404).json({ error: "Video no encontrado" });
+    }
+    res.json(video);
+  } catch (error) {
+    console.error("❌ Error al obtener video por ID:", error);
+    res.status(500).json({ error: "Error al obtener el video" });
+  }
+};
 
-// ✅ Exportar todo lo necesario para index.js
+
 module.exports = {
   videoPost,
   videoGetAll,
   videoUpdate,
-  videoDelete
+  videoDelete,
+  videoGetById
 };

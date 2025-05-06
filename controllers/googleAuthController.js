@@ -12,7 +12,7 @@ const googleLogin = async (req, res) => {
     try {
         const ticket = await client.verifyIdToken({
             idToken,
-            audience: "GOOGLE KEY"
+            audience: "535454289640-ruei9sos6g72cpcf8d6e3r710qq3b0gu.apps.googleusercontent.com"
         });
         const payload = ticket.getPayload();
         const { email, name, sub } = payload;

@@ -80,6 +80,7 @@ app.post("/api/playlists", verifyToken, playlistController.createPlaylist);
 app.put("/api/playlists/:id", verifyToken, playlistController.updatePlaylist);
 app.delete("/api/playlists/:id", verifyToken, playlistController.deletePlaylist);
 app.post("/api/playlists/add-videos", verifyToken, playlistController.addVideosToPlaylist);
+app.get("/api/playlists/search-videos", verifyToken, playlistController.searchVideosByRestrictedUser);
 
 // 🚀 Servidor
 app.listen(3000, () => console.log("🚀 Server running on http://localhost:3000"));
